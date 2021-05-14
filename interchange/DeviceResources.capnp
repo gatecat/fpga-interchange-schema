@@ -66,6 +66,14 @@ struct WireTypeRef {
 annotation wireTypeRef(*) :WireTypeRef;
 using WireTypeIdx = UInt32;
 
+struct NodeShapeRef {
+    type  @0 :Ref.ReferenceType = parent;
+    field @1 :Text = "nodeShapes";
+    depth @2 :Int32 = 1;
+}
+annotation nodeShapeRef(*) :NodeShapeRef;
+using NodeShapeIdx = UInt32;
+
 using WireIDInTileType = UInt32; # ID in Tile Type
 using SitePinIdx = UInt32;
 
@@ -86,7 +94,7 @@ struct Device {
   siteTypeList    @2 : List(SiteType);
   tileTypeList    @3 : List(TileType);
   tileList        @4 : List(Tile);
-  wires           @5 : List(Wire);
+  deleted         @5 : Void;
   nodes           @6 : List(Node);
   primLibs        @7 : Dir.Netlist; # Netlist libraries of Unisim primitives and macros
   exceptionMap    @8 : List(PrimToMacroExpansion); # Prims to macros expand w/same name, except these
@@ -98,6 +106,7 @@ struct Device {
   lutDefinitions @14 : LutDefinitions;
   parameterDefs  @15 : ParameterDefinitions;
   wireTypes      @16 : List(WireType);
+  nodeShapes     @17 : List(NodeShape);
 
   #######################################
   # Placement definition objects
@@ -141,6 +150,7 @@ struct Device {
     wires      @2 : List(StringIdx) $stringRef();
     pips       @3 : List(PIP);
     constants  @4 : List(WireConstantSources);
+    wireTypes  @5 : List(WireTypeIdx);
   }
 
   #######################################
@@ -238,7 +248,18 @@ struct Device {
   }
 
   struct Node {
-    wires    @0 : List(WireIdx) $wireRef();
+    rootTile  @0 : StringIdx $stringRef();
+    shape      @1 : NodeShapeIdx $nodeShapeRef();
+  }
+
+  struct NodeWire {
+    dx    @0 : Int16; # wire.x = rootTile.x + dx
+    dy    @1 : Int16; # wire.y = rootTile.y + dy
+    wire  @2 : StringIdx $stringRef();
+  }
+
+  struct NodeShape {
+    wires @0 : List(NodeWire);
   }
 
   struct PIP {
